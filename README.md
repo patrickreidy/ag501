@@ -27,7 +27,7 @@ sweep <- ReadSweep(
 )
 ```
 
-#### Apply a low-pass Butterworth filter to all variables in sweep$PositionData
+#### Apply a low-pass Butterworth filter to all channels of position data
 ```r
 sweep %>%
   dplyr::mutate(
@@ -43,7 +43,7 @@ sweep %>%
   )
 ```
 
-#### Estimate velocity and acceleration of all variables in position data channels
+#### Estimate velocity and acceleration of all channels of position data
 ```r
 sweep %>%
   dplyr::mutate(
@@ -66,7 +66,7 @@ sweep %>%
   )
 ```
 
-#### Estimate speed of tongue-tip sensor (TT) in a sagittal (xz) plane
+#### Estimate speed of tongue-tip sensor (TT) in the sagittal (xz) plane
 ```r
 sweep %>%
   dplyr::mutate(
@@ -87,7 +87,7 @@ sweep %>%
   )
 ```
 
-#### Low-pass filter position data; compute lip aperature time-series from filtered data
+#### Low-pass filter position data; compute lip aperature time-series
 ```r
 sweep %>%
   dplyr::mutate(
