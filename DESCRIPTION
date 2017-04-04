@@ -1,0 +1,30 @@
+Package: ag501
+Title: Carstens AG501 Electromagnetic Articulograph
+Version: 0.0.5
+Authors@R: as.person(c(
+    "Patrick Reidy <reidy@utdallas.edu> [aut,cre]"
+  ))
+Description: Analyze kinematic data recorded from a Carstens AG501 
+    electromagnetic articulograph (EMA). Metadata and positional data recorded 
+    from EMA sensors are structured as a nested data frame. Functions provided
+    for filtering data (e.g., low-pass Butterworth filter) or for calculating
+    derived time-series from the position data (e.g., velocity or acceleration
+    from forward or central differencing) are defined with data-first argument
+    lists, making them compatible with the tidyverse.
+Depends:
+    R (>= 3.3.1)
+Imports:
+    dplyr,
+    lubridate,
+    magrittr,
+    methods,
+    purrr,
+    readr,
+    signal,
+    stringi,
+    stringr,
+    tibble
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 5.0.1
