@@ -103,26 +103,7 @@ parseNormposFilter <- function(filter, sensors) {
 #'   socket to which the sensor was connected. Default is \code{c("")}.
 #'
 #' @return A data tibble with the following variables:
-#' \itemize{
-#'   \item \code{Sweep}
-#'   \item \code{Format}
-#'   \item \code{SamplingRate}
-#'   \item \code{SweepsaverBuild}
-#'   \item \code{SweepsaverVersion}
-#'   \item \code{SweepsaverRevision}
-#'   \item \code{SweepsaverTimestamp}
-#'   \item \code{CalcposBuild}
-#'   \item \code{CalcposVersion}
-#'   \item \code{CalcposRevision}
-#'   \item \code{CalcposTimestamp}
-#'   \item \code{NormposBuild}
-#'   \item \code{NormposVersion}
-#'   \item \code{NormposRevision}
-#'   \item \code{NormposTimestamp}
-#'   \item \code{TaxonomicDistanceMean}
-#'   \item \code{TaxonomicDistanceStdDev}
-#'   \item \code{PostFilters}
-#' }
+#' @template sweep-metadata
 #'
 #' @export
 ReadSweepMetadata <- function(file, sensors = c("")) {
@@ -203,19 +184,24 @@ ReadSweepMetadata <- function(file, sensors = c("")) {
 #'   the participant and connected to sockets in the Carstens Sensin box. The
 #'   position of a name in this vector is interpreted as the number of the
 #'   socket to which the sensor was connected. Default is \code{c("")}.
+#' @param n A numeric, the number of data channels that are recorded
+#'   per sensor. Default is \code{7}, which is consistent with Carstens data
+#'   format \code{AG50xDATA_V003}, under which each sensor comprises data
+#'   channels: \code{x}, \code{y}, \code{z}, \code{phi}, \code{theta},
+#'   \code{rms}, \code{extra}.
 #'
 #' @return A data tibble, the names of whose variables are determined by
-#'   expanding the \code{sensors} argument through \code{FormatChannels} and
-#'   then dropping the channels suffixed by \code{extra} (i.e., the placeholder
-#'   channels).
-#'
-#' @seealso \code{\link{FormatChannels}}
+#'   expanding the \code{sensors} argument through \code{\link{FormatChannels}}
+#'   and dropping the channels suffixed by \code{extra}, which contain no
+#'   meaningful data.
 #'
 #' @export
-ReadSweepData <- function(file, sensors = c("")) {
-  suppressMessages(readr::read_delim(file, delim = "\t", col_names = FALSE)) %>%
-    purrr::set_names(FormatChannels(sensors = sensors, n = ncol(.)/7)) %>%
+ReadSweepData <- function(file, sensors = c(""), n = 7) {
+  .sweep_data <-
+    suppressMessages(readr::read_delim(file, delim = "\t", col_names = FALSE)) %>%
+    purrr::set_names(FormatChannels(sensors = sensors, n = ncol(.)/n)) %>%
     dplyr::select(-dplyr::ends_with("extra"))
+  return(.sweep_data)
 }
 
 
@@ -224,59 +210,52 @@ ReadSweepData <- function(file, sensors = c("")) {
 
 #' Read the Positional Data Recorded During a Sweep
 #'
-#' Read the head-corrected positional data from a \code{.txt} file and its
-#' metadata from the header of a \code{.pos} file.
+#' Read the head-corrected (and biteplane-rotated) positional data from a
+#' \code{.txt} file and its metadata from the header of a \code{.pos} file.
 #'
-#' @param sweep A character string, the basename of associated \code{.txt} and
-#'   \code{.pos} files that are generated from post-processing a sweep. That is,
-#'   there should be files \code{<sweep>.txt} and \code{<sweep>.pos} located in
-#'   \code{path}.
-#' @param path A character string, the path to the directory containing the
-#'   \code{.txt} and \code{.pos} files.
+#' @param sweep A character string, the path to and basename (without extension)
+#'   of a sweep. \code{stringr::str_interp("${sweep}.pos")} should point to
+#'   a \code{.pos} file whose header contains the metadata about the sweep.
+#'   \code{stringr::str_interp("${sweep}.txt")} should point to a \code{.txt}
+#'   file that contains the positional data recorded for the sweep.
 #' @param sensors A character vector, names for sensors that were attached to
 #'   the participant and connected to sockets in the Carstens Sensin box. The
 #'   position of a name in this vector is interpreted as the number of the
 #'   socket to which the sensor was connected. Default is \code{c("")}.
 #'
-#' @return A data tibble, with the following variables:
-#' \itemize{
-#'   \item all variables returned by \code{ReadSweepMetadata}
-#'   \item \code{TimeData}: a list of data tibbles, the times at which position
-#'         data samples were recorded
-#'   \item \code{PositionData}: a list of data tibbles, the position data
-#'         returned by \code{ReadSweepData} for the active sensors that were
-#'         recorded during the sweep and then post-processed with Calcpos and
-#'         Normpos
-#' }
-#'
-#' @seealso \code{\link{ReadSweepMetadata}}, \code{\link{ReadSweepData}}
+#' @return A nested data frame with the following variables:
+#' @template sweep-metadata
+#' @template sweep-data
 #'
 #' @export
-ReadSweep <- function(sweep, path, sensors = c("")) {
-  .metadata <- list.files(path = path,
-                          pattern = stringr::str_interp("${sweep}.pos"),
-                          full.names = TRUE) %>%
+ReadSweep <- function(sweep, sensors = c("")) {
+  .metadata <-
+    stringr::str_interp("${sweep}.pos") %>%
     ReadSweepMetadata(sensors = sensors)
-  .data <- list.files(path = path,
-                      pattern = stringr::str_interp("${sweep}.txt"),
-                      full.names = TRUE) %>%
-    ReadSweepData(sensors = sensors)
-  .active_cols <- .metadata %>%
-    dplyr::select(PostFilters) %>%
-    purrr::map(1) %>%
-    purrr::map("Sensor") %>%
-    purrr::reduce(c) %>%
-    unique() %>%
-    purrr::map(dplyr::starts_with, vars = names(.data)) %>%
-    purrr::reduce(c)
-  .pos_data <- .metadata %>%
-    dplyr::mutate(PositionData = list(.data %>% dplyr::select(.active_cols))) %>%
-    dplyr::mutate(TimeData = purrr::map2(
-      SamplingRate, PositionData,
-      ~ tibble::tibble(Time = seq(from = 0, by = 1/.x, length.out = nrow(.y)))
-    )) %>%
-    dplyr::select(-dplyr::one_of(c("TimeData", "PositionData")), TimeData, PositionData)
-  return(.pos_data)
+  .active_chs <-
+    .metadata %>%
+    dplyr::pull(PostFilters) %>%
+    purrr::flatten_df() %>%
+    dplyr::filter(Application == "Normpos") %>%
+    dplyr::pull(Sensor) %>%
+    paste(collapse = "|")
+  .pos_data <-
+    stringr::str_interp("${sweep}.txt") %>%
+    ReadSweepData(sensors = sensors) %>%
+    dplyr::select(dplyr::matches(.active_chs))
+  .time_data <-
+    tibble::tibble(
+      Time = seq(from = 0,
+                 length.out = nrow(.pos_data),
+                 by = 1/dplyr::pull(.metadata, SamplingRate))
+    )
+  .sweep <-
+    .metadata %>%
+    dplyr::mutate(
+      TimeData = list(.time_data),
+      PositionData = list(.pos_data)
+    )
+  return(.sweep)
 }
 
 
@@ -294,20 +273,29 @@ ReadSweep <- function(sweep, path, sensors = c("")) {
 #'   position of a name in this vector is interpreted as the number of the
 #'   socket to which the sensor was connected. Default is \code{c("")}.
 #'
-#' @return A data tibble with the same variables as those returned by
-#'   \code{ReadPos}.
-#'
-#' @seealso \code{\link{ReadSweep}}
+#' @return A nested data frame, the result of calling \code{\link{ReadSweep}}
+#'   on each sweep that has a \code{.pos} and a \code{.txt} file in \code{path},
+#'   and then row-binding them together. The returned data frame has the
+#'   following columns:
+#' @template sweep-metadata
+#' @template sweep-data
 #'
 #' @export
 ReadBatch <- function(path, sensors = c("")) {
-  .pos <- list.files(path = path, pattern = "\\.pos$") %>%
+  .pos_files <-
+    path %>%
+    list.files(pattern = "\\.pos$") %>%
     stringr::str_replace(pattern = "\\.pos$", replacement = "")
-  .txt <- list.files(path = path, pattern = "\\.txt$") %>%
+  .txt_files <-
+    path %>%
+    list.files(pattern = "\\.txt$") %>%
     stringr::str_replace(pattern = "\\.txt$", replacement = "")
-  intersect(.pos, .txt) %>%
-    purrr::map(ReadSweep, path = path, sensors = sensors) %>%
+  .sweeps <-
+    path %>%
+    file.path(dplyr::intersect(.pos_files, .txt_files)) %>%
+    purrr::map(ReadSweep, sensors = sensors) %>%
     purrr::reduce(dplyr::bind_rows)
+  return(.sweeps)
 }
 
 

@@ -78,7 +78,7 @@ sweep %>%
           dplyr::mutate(TTx_vel = CentralDifference(TTx, sr)) %>%
           dplyr::mutate(TTz_vel = CentralDifference(TTz, sr)) %>%
           dplyr::mutate(TTxz_spd = sqrt(TTx_vel^2 + TTz_vel^2))
-     }
+      }
     )
   ) %>%
   dplyr::select(
