@@ -3,7 +3,7 @@
 \name{CarstensFilters}
 \alias{CarstensFilters}
 \title{Post-processing Filters}
-\format{A data tibble with 142 rows and 7 variables:
+\format{A data frame with 142 rows and 7 variables:
 \itemize{
   \item \code{Name}: the name of the filter, as referenced by Calcpos or
         Normpos
@@ -34,4 +34,3 @@ with the Carstens software on the control server. These filters are applied
 to the recorded data by the Calcpos and Normpos applications during
 post-processing. Each filter is represented as a Kaiser window.
 }
-

@@ -2,8 +2,8 @@
 % Please edit documentation in R/difference.R
 \name{CentralDifference}
 \alias{CentralDifference}
-\alias{CentralDifference,data.frame-method}
 \alias{CentralDifference,numeric-method}
+\alias{CentralDifference,data.frame-method}
 \title{S4 Generic: CentralDifference}
 \usage{
 \S4method{CentralDifference}{numeric}(x, samplingRate, n, order)
@@ -36,4 +36,3 @@ The central difference of \code{x} if \code{x} is numeric, or of
 Given a numeric series \code{x}, compute its \code{n}-offset central
 difference \code{y}, such that \code{y[i] = x[i+n] - x[i-n]}.
 }
-

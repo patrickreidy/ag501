@@ -2,8 +2,8 @@
 % Please edit documentation in R/filter.R
 \name{Butterworth}
 \alias{Butterworth}
-\alias{Butterworth,data.frame-method}
 \alias{Butterworth,numeric-method}
+\alias{Butterworth,data.frame-method}
 \title{S4 Generic: Butterworth}
 \usage{
 \S4method{Butterworth}{numeric}(x, samplingRate, order, cutoffs, type)
@@ -46,4 +46,3 @@ to remove phase distortion from one-pass filtering.
 \seealso{
 \code{\link[signal]{butter}}, \code{\link[signal]{filtfilt}}
 }
-

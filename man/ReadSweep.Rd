@@ -4,16 +4,14 @@
 \alias{ReadSweep}
 \title{Read the Positional Data Recorded During a Sweep}
 \usage{
-ReadSweep(sweep, path, sensors = c(""))
+ReadSweep(sweep, sensors = c(""))
 }
 \arguments{
-\item{sweep}{A character string, the basename of associated \code{.txt} and
-\code{.pos} files that are generated from post-processing a sweep. That is,
-there should be files \code{<sweep>.txt} and \code{<sweep>.pos} located in
-\code{path}.}
-
-\item{path}{A character string, the path to the directory containing the
-\code{.txt} and \code{.pos} files.}
+\item{sweep}{A character string, the path to and basename (without extension)
+of a sweep. \code{stringr::str_interp("${sweep}.pos")} should point to
+a \code{.pos} file whose header contains the metadata about the sweep.
+\code{stringr::str_interp("${sweep}.txt")} should point to a \code{.txt}
+file that contains the positional data recorded for the sweep.}
 
 \item{sensors}{A character vector, names for sensors that were attached to
 the participant and connected to sockets in the Carstens Sensin box. The
@@ -21,22 +19,79 @@ position of a name in this vector is interpreted as the number of the
 socket to which the sensor was connected. Default is \code{c("")}.}
 }
 \value{
-A data tibble, with the following variables:
+A nested data frame with the following variables:
+
 \itemize{
-  \item all variables returned by \code{ReadSweepMetadata}
-  \item \code{TimeData}: a list of data tibbles, the times at which position
-        data samples were recorded
-  \item \code{PositionData}: a list of data tibbles, the position data
-        returned by \code{ReadSweepData} for the active sensors that were
-        recorded during the sweep and then post-processed with Calcpos and
-        Normpos
+  \item \code{Sweep}: A character, the name of the sweep, which identifies
+    files with \code{.pos} and \code{.txt} extensions.
+  \item \code{Format}: A character, the data format defined by Carstens.
+  \item \code{SamplingRate}: A numeric, the number of samples recorded
+    per second by the AG501.
+  \item \code{SweepsaverBuild}: A character, the version and revision number
+    of the Sweepsaver application, which records the amplitude values
+    detected by the sensor coils in the AG501.
+  \item \code{SweepsaverVersion}: A numeric, the version number of the
+    Sweepsaver application.
+  \item \code{SweepsaverRevision}: A numeric, the revision number of the
+    Sweepsaver application.
+  \item \code{SweepsaverTimestamp}: A datetime, the date and time when the
+    sweep was recorded by the Sweepsaver application, in
+    \code{YYYY-MM-DD HH:MM:SS} format.
+  \item \code{CalcposBuild}: A character, the version and revision number
+    of the Calcpos application, which transforms the amplitude values
+    recorded by Sweepsaver into raw position data that has not been
+    corrected for head movement.
+  \item \code{CalcposVersion}: A numeric, the version number of the Calcpos
+    application.
+  \item \code{CalcposRevision}: A numeric, the revision number of the Calcpos
+    application.
+  \item \code{CalcposTimestamp}: A datetime, the date and time when the
+    raw position data was computed by Calcpos.
+  \item \code{NormposBuild}: A character, the version and revision number
+    of the Normpos application, which transforms the raw position data by
+    removing head movement. If the Carstens biteplane was used to compute
+    a rotation matrix, then Normpos also rotates and translates the data
+    so that the participant's biteplane lies within the x-y plane and so
+    that the participant's upper incisors lie at the origin of the coordinate
+    system.
+  \item \code{NormposVersion}: A numeric, the version number of the Normpos
+    application.
+  \item \code{NormposRevision}: A numeric, the revision number of the Normpos
+    application.
+  \item \code{NormposTimestamp}: A datetime, the date and time when the
+    head-correction and biteplane-rotation were applied by Normpos.
+  \item \code{TaxonomicDistanceMean}: A numeric, the mean of the taxonomic
+    distances, averaging across samples. The taxonomic distance of each
+    sample is, roughly, the difference between the measured position and the
+    expected position relative to a reference object.
+  \item \code{TaxonomicDistanceStdDev}: A numeric, the standard deviation of
+    taxonomic distances for the sweep.
+  \item \code{PostFilters}: A data frame that records the low-pass Kaiser
+    filters that were applied to the data channels of the active sensors,
+    during postprocessing by the Calcpos and Normpos applications. Includes
+    the following columns:
+    \itemize{
+      \item \code{Socket}: A numeric, the number of the socket in the Sensin
+        box to which the physical sensor was connected.
+      \item \code{Sensor}: A character, the name of the sensor whose data
+        channels were low-pass filtered. See: \code{\link{FormatChannels}}.
+      \item \code{Name}: A character, the name of the filter applied to the
+        sensor's data channels. See: \code{\link{CarstensFilters}}.
+      \item \code{Application}: A character, the application that applied
+        the low-pass filter to the data.
+    }
+}
+
+\itemize{
+  \item \code{TimeData}: A list-col, whose only entry is a data frame with
+    a single column, \code{Time}, whose values denote the times of the
+    samples of the position data.
+  \item \code{PositionData}: A list-col, whose only entry is the data frame
+    of the position data for the active sensors, returned by
+    \code{\link{ReadSweepData}}.
 }
 }
 \description{
-Read the head-corrected positional data from a \code{.txt} file and its
-metadata from the header of a \code{.pos} file.
+Read the head-corrected (and biteplane-rotated) positional data from a
+\code{.txt} file and its metadata from the header of a \code{.pos} file.
 }
-\seealso{
-\code{\link{ReadSweepMetadata}}, \code{\link{ReadSweepData}}
-}
-

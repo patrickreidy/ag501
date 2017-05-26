@@ -69,4 +69,3 @@ FormatChannels(sensors = c("", "", "TB", "TD", "TT"), n = 16)
 \seealso{
 \code{\link{FormatSensors}}
 }
-

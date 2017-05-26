@@ -32,4 +32,3 @@ FormatSensors(sensors = c("HL", "HR", "TB", "TD", "TT"), n = 16)
 FormatSensors(sensors = c("", "", "TB", "TD", "TT"), n = 16)
 
 }
-

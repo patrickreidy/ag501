@@ -2,8 +2,8 @@
 % Please edit documentation in R/difference.R
 \name{ForwardDifference}
 \alias{ForwardDifference}
-\alias{ForwardDifference,data.frame-method}
 \alias{ForwardDifference,numeric-method}
+\alias{ForwardDifference,data.frame-method}
 \title{S4 Generic: ForwardDifference}
 \usage{
 \S4method{ForwardDifference}{numeric}(x, samplingRate, n, order)
@@ -36,4 +36,3 @@ The forward difference of \code{x} if \code{x} is numeric, or of
 Given a numeric series \code{x}, compute its \code{n}-offset forward
 difference \code{y}, such that \code{y[i] = x[i+n] - x[i]}.
 }
-
