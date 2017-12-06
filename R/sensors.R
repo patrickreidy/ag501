@@ -8,7 +8,7 @@
 #' @param sensors A character vector, names for sensors that were attached to
 #'   the participant and connected to sockets in the Carstens Sensin box. The
 #'   position of a name in this vector is interpreted as the number of the
-#'   socket to which the sensor was connected. Default is \code{c("")}.
+#'   socket to which the sensor was connected. Default is \code{character()}.
 #' @param n An atomic numeric, the number of sensors/sockets for which the
 #'   Carstens Sweepsaver software recorded data. (This number is recorded in
 #'   the \code{NumberOfChannels} field in the header of a \code{.pos} file.)
@@ -25,10 +25,9 @@
 #' FormatSensors(sensors = c("", "", "TB", "TD", "TT"), n = 16)
 #'
 #' @export
-FormatSensors <- function(sensors = c(""), n = 16) {
+FormatSensors <- function(sensors = character(), n = 16) {
   .channels <- paste0("CH", sprintf("%02d", 1:n))
-  .sensors <- c(sensors, rep("", times = n-length(sensors))) %>%
-    ifelse(. == "", .channels, .)
+  .sensors <- ifelse(1:n <= length(sensors) & sensors[1:n] != "", sensors, .channels)
   return(.sensors)
 }
 
@@ -73,7 +72,7 @@ FormatSensors <- function(sensors = c(""), n = 16) {
 #' @param sensors A character vector, names for sensors that were attached to
 #'   the participant and connected to sockets in the Carstens Sensin box. The
 #'   position of a name in this vector is interpreted as the number of the
-#'   socket to which the sensor was connected. Default is \code{c("")}.
+#'   socket to which the sensor was connected. Default is \code{character()}.
 #' @param n An atomic numeric, the number of sensors/sockets for which the
 #'   Carstens Sweepsaver software recorded data. (This number is recorded in
 #'   the \code{NumberOfChannels} field in the header of a \code{.pos} file.)
@@ -92,9 +91,9 @@ FormatSensors <- function(sensors = c(""), n = 16) {
 #' @seealso \code{\link{FormatSensors}}
 #'
 #' @export
-FormatChannels <- function(sensors = c(""), n = 16) {
+FormatChannels <- function(sensors = character(), n = 16) {
   FormatSensors(sensors = sensors, n = n) %>%
-    purrr::map(~ paste0(.x, c("x", "y", "z", "phi", "theta", "rms", "extra"))) %>%
+    purrr::map(function(.s) {paste0(.s, c("x", "y", "z", "phi", "theta", "rms", "extra"))}) %>%
     purrr::reduce(c)
 }
 

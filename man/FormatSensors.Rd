@@ -4,13 +4,13 @@
 \alias{FormatSensors}
 \title{Format Sensor Names}
 \usage{
-FormatSensors(sensors = c(""), n = 16)
+FormatSensors(sensors = character(), n = 16)
 }
 \arguments{
 \item{sensors}{A character vector, names for sensors that were attached to
 the participant and connected to sockets in the Carstens Sensin box. The
 position of a name in this vector is interpreted as the number of the
-socket to which the sensor was connected. Default is \code{c("")}.}
+socket to which the sensor was connected. Default is \code{character()}.}
 
 \item{n}{An atomic numeric, the number of sensors/sockets for which the
 Carstens Sweepsaver software recorded data. (This number is recorded in
