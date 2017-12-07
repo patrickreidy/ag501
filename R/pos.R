@@ -12,51 +12,58 @@ parseDbl <- function(header, field, name) {
 
 
 parseBuild <- function(header, field, prefix) {
-  header %>%
+  .parsed <- header %>%
     stringr::str_subset(pattern = field) %>%
     stringr::str_split(pattern = "=") %>%
     purrr::map_chr(2) %>%
     tibble::as_tibble() %>%
-    dplyr::rename(Build = value) %>%
+    dplyr::rename(Build = .data$value) %>%
     dplyr::mutate(
-      Version = Build %>%
-        stringr::str_extract(pattern = "[0-9]+\\.[0-9]+") %>%
-        as.numeric()
+      Version = stringr::str_extract(string = .data$Build,
+                                     pattern = "[0-9]+\\.[0-9]+"),
+      Version = as.numeric(.data$Version)
     ) %>%
     dplyr::mutate(
-      Revision = Build %>%
-        stringr::str_extract(pattern = "[0-9]+$") %>%
-        as.numeric()
-    ) %>%
-    purrr::set_names(paste(prefix, names(.), sep = ""))
+      Revision = stringr::str_extract(string = .data$Build,
+                                      pattern = "[0-9]+$"),
+      Revision = as.numeric(.data$Revision)
+    )
+  .parsed_named <- purrr::set_names(.parsed, nm = stringr::str_c(prefix, names(.parsed)))
+  return(.parsed_named)
 }
 
 
 parseTimestamp <- function(header, field, name) {
-  header %>%
+  .tz <- Sys.timezone()
+  if (! (.tz %in% OlsonNames())) {
+    Sys.setenv(TZ = "UTC")
+  }
+  .timezone <-
+    header %>%
     stringr::str_subset(pattern = field) %>%
     stringr::str_split(pattern = "=") %>%
     purrr::map_chr(2) %>%
     lubridate::ymd_hms(tz = Sys.timezone()) %>%
     tibble::as_tibble() %>%
     purrr::set_names(name)
+  if (! (.tz %in% OlsonNames())) {
+    Sys.unsetenv("TZ")
+  }
+  return(.timezone)
 }
 
 
 parseTaxonomic <- function(header, statistic) {
   .normpos_version <- parseBuild(header, "normpos.version", "") %>%
-    dplyr::select(Version) %>%
+    dplyr::select(.data$Version) %>%
     as.numeric()
   .field <- stringr::str_interp("Taxonomic_Distance_${statistic}")
-  .taxonomic <- ifelse(
-    .normpos_version >= 2.4,
-    parseDbl(header, .field, "x") %>% as.numeric(),
-    as.numeric(NA)
-  )
-  tibble::tibble(.taxonomic) %>%
-    purrr::set_names(
-      .field %>% stringr::str_replace_all(pattern = "_", replacement = "")
-    )
+  .taxonomic <- ifelse(.normpos_version >= 2.4,
+                       as.numeric(parseDbl(header, .field, "x")),
+                       as.numeric(NA))
+  .tax_tibble <- purrr::set_names(tibble::tibble(.taxonomic),
+                                    stringr::str_replace_all(.field, "_", ""))
+  return(.tax_tibble)
 }
 
 
@@ -77,7 +84,7 @@ parseNormposFilter <- function(filter, sensors) {
       purrr::map_chr(2) %>%
       stringr::str_split(pattern = ",", simplify = TRUE) %>%
       as.numeric(),
-    Sensor = sensors[Socket],
+    Sensor = sensors[.data$Socket],
     Name = filter %>%
       stringr::str_split(pattern = "\\.") %>%
       purrr::map_chr(2) %>%
@@ -100,20 +107,19 @@ parseNormposFilter <- function(filter, sensors) {
 #' @param sensors A character vector, names for sensors that were attached to
 #'   the participant and connected to sockets in the Carstens Sensin box. The
 #'   position of a name in this vector is interpreted as the number of the
-#'   socket to which the sensor was connected. Default is \code{c("")}.
+#'   socket to which the sensor was connected. Default is \code{character()}.
 #'
 #' @return A data tibble with the following variables:
 #' @template sweep-metadata
 #'
 #' @export
-ReadSweepMetadata <- function(file, sensors = c("")) {
+ReadSweepMetadata <- function(file, sensors = character()) {
   # Read the lines of the `file`. Select just the header.
-  .header <- readr::read_lines(file) %>%
-    .[1:(match("", .) - 1)]
+  .lines <- readr::read_lines(file)
+  .header <- .lines[1:(match("", .lines) - 1)]
   # Format the names of the `sensors`.
-  .sensors <- sensors %>%
-    FormatSensors(n = parseDbl(.header, "NumberOfChannels", "x") %>%
-                    as.numeric())
+  .n <- as.numeric(parseDbl(.header, field = "NumberOfChannels", name = "x"))
+  .sensors <- FormatSensors(sensors = sensors, n = .n)
   # Parse the filters applied by cs5normpos.
   .normpos_filters <- .header %>%
     stringr::str_subset(pattern = "normpos") %>%
@@ -127,12 +133,12 @@ ReadSweepMetadata <- function(file, sensors = c("")) {
     stringi::stri_subset_regex(pattern = "version|timestamp", negate = TRUE) %>%
     parseCalcposFilter() %>%
     dplyr::sample_n(size = nrow(.normpos_filters), replace = TRUE) %>%
-    dplyr::bind_cols(dplyr::select(.normpos_filters, Socket, Sensor)) %>%
-    dplyr::select(Socket, Sensor, Name, Application)
+    dplyr::bind_cols(dplyr::select(.normpos_filters, .data$Socket, .data$Sensor)) %>%
+    dplyr::select(.data$Socket, .data$Sensor, .data$Name, .data$Application)
   # Bind the normpos-filters and the calcpos-filters.
   .post_filters <- .calcpos_filters %>%
     dplyr::bind_rows(.normpos_filters) %>%
-    dplyr::arrange(Socket, Application)
+    dplyr::arrange(.data$Socket, .data$Application)
   .metadata <- tibble::tibble(
     Sweep = basename(file) %>%
       stringr::str_replace(pattern = ".pos", replacement = ""),
@@ -183,7 +189,7 @@ ReadSweepMetadata <- function(file, sensors = c("")) {
 #' @param sensors A character vector, names for sensors that were attached to
 #'   the participant and connected to sockets in the Carstens Sensin box. The
 #'   position of a name in this vector is interpreted as the number of the
-#'   socket to which the sensor was connected. Default is \code{c("")}.
+#'   socket to which the sensor was connected. Default is \code{character()}.
 #' @param n A numeric, the number of data channels that are recorded
 #'   per sensor. Default is \code{7}, which is consistent with Carstens data
 #'   format \code{AG50xDATA_V003}, under which each sensor comprises data
@@ -196,10 +202,10 @@ ReadSweepMetadata <- function(file, sensors = c("")) {
 #'   meaningful data.
 #'
 #' @export
-ReadSweepData <- function(file, sensors = c(""), n = 7) {
-  .sweep_data <-
-    suppressMessages(readr::read_delim(file, delim = "\t", col_names = FALSE)) %>%
-    purrr::set_names(FormatChannels(sensors = sensors, n = ncol(.)/n)) %>%
+ReadSweepData <- function(file, sensors = character(), n = 7) {
+  .channel_data <- suppressMessages(readr::read_delim(file, delim = "\t", col_names = FALSE))
+  .channel_names <- FormatChannels(sensors = sensors, n = ncol(.channel_data)/n)
+  .sweep_data <- purrr::set_names(.channel_data, .channel_names) %>%
     dplyr::select(-dplyr::ends_with("extra"))
   return(.sweep_data)
 }
@@ -221,40 +227,33 @@ ReadSweepData <- function(file, sensors = c(""), n = 7) {
 #' @param sensors A character vector, names for sensors that were attached to
 #'   the participant and connected to sockets in the Carstens Sensin box. The
 #'   position of a name in this vector is interpreted as the number of the
-#'   socket to which the sensor was connected. Default is \code{c("")}.
+#'   socket to which the sensor was connected. Default is \code{character()}.
 #'
 #' @return A nested data frame with the following variables:
 #' @template sweep-metadata
 #' @template sweep-data
 #'
 #' @export
-ReadSweep <- function(sweep, sensors = c("")) {
-  .metadata <-
-    stringr::str_interp("${sweep}.pos") %>%
-    ReadSweepMetadata(sensors = sensors)
+ReadSweep <- function(sweep, sensors = character()) {
+  .metadata <- ReadSweepMetadata(file = stringr::str_interp("${sweep}.pos"),
+                                 sensors = sensors)
   .active_chs <-
     .metadata %>%
-    dplyr::pull(PostFilters) %>%
+    dplyr::pull(.data$PostFilters) %>%
     purrr::flatten_df() %>%
-    dplyr::filter(Application == "Normpos") %>%
-    dplyr::pull(Sensor) %>%
+    dplyr::filter(.data$Application == "Normpos") %>%
+    dplyr::pull(.data$Sensor) %>%
     paste(collapse = "|")
   .pos_data <-
-    stringr::str_interp("${sweep}.txt") %>%
-    ReadSweepData(sensors = sensors) %>%
+    ReadSweepData(file = stringr::str_interp("${sweep}.txt"),
+                  sensors = sensors) %>%
     dplyr::select(dplyr::matches(.active_chs))
-  .time_data <-
-    tibble::tibble(
-      Time = seq(from = 0,
-                 length.out = nrow(.pos_data),
-                 by = 1/dplyr::pull(.metadata, SamplingRate))
-    )
-  .sweep <-
-    .metadata %>%
-    dplyr::mutate(
-      TimeData = list(.time_data),
-      PositionData = list(.pos_data)
-    )
+  .time_samples <- seq(from = 0, by = 1/dplyr::pull(.metadata, .data$SamplingRate),
+                       length.out = nrow(.pos_data))
+  .time_data <- tibble::tibble(Time = .time_samples)
+  .sweep <- dplyr::mutate(.metadata,
+                          TimeData = list(.time_data),
+                          Position = list(.pos_data))
   return(.sweep)
 }
 

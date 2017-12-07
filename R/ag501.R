@@ -10,6 +10,7 @@
 #' lists, making them compatible with the tidyverse.
 #'
 #' @importFrom magrittr %>%
+#' @importFrom rlang .data
 #'
 #' @section Imports:
 #'   \itemize{
@@ -19,6 +20,7 @@
 #'     \item \code{methods}
 #'     \item \code{purrr}
 #'     \item \code{readr}
+#'     \item \code{rlang}
 #'     \item \code{signal}
 #'     \item \code{stringi}
 #'     \item \code{stringr}

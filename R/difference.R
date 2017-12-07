@@ -64,9 +64,10 @@ methods::setMethod(
   f = "ForwardDifference",
   signature = c(x = "data.frame"),
   definition = function(x, samplingRate = 1, n = 1, order = 1, suffix = "") {
-    x %>%
-      purrr::map_df(ForwardDifference, samplingRate = samplingRate, n = n) %>%
-      purrr::set_names(nm = paste0(names(.), suffix))
+    .diffed <- purrr::map_df(x, ForwardDifference,
+                             samplingRate = samplingRate, n = n)
+    .named <- purrr::set_names(.diffed, stringr::str_c(names(.diffed), suffix))
+    return(.named)
   }
 )
 
@@ -136,8 +137,9 @@ methods::setMethod(
   f = "CentralDifference",
   signature = c(x = "data.frame"),
   definition = function(x, samplingRate = 1, n = 1, order = 1, suffix = "") {
-    x %>%
-      purrr::map_df(CentralDifference, samplingRate = samplingRate, n = n, order = order) %>%
-      purrr::set_names(nm = paste0(names(.), suffix))
+    .diffed <- purrr::map_df(x, CentralDifference,
+                             samplingRate = samplingRate, n = n, order = order)
+    .named <- purrr::set_names(.diffed, stringr::str_c(names(.diffed), suffix))
+    return(.named)
   }
 )

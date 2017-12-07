@@ -65,15 +65,11 @@ methods::setMethod(
   f = "Butterworth",
   signature = c(x = "data.frame"),
   definition = function(x, samplingRate, order, cutoffs, type = "low", suffix = "") {
-    x %>%
-      purrr::map_df(
-        Butterworth,
-        samplingRate = samplingRate,
-        order = order,
-        cutoffs = cutoffs,
-        type = type
-      ) %>%
-      purrr::set_names(nm = paste0(names(.), suffix))
+    .filtered <- purrr::map_df(x, Butterworth,
+                               samplingRate = samplingRate, order = order,
+                               cutoffs = cutoffs, type = type)
+    .named <- purrr::set_names(.filtered, stringr::str_c(names(.filtered), suffix))
+    return(.named)
   }
 )
 

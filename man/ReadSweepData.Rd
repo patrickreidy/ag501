@@ -4,7 +4,7 @@
 \alias{ReadSweepData}
 \title{Read the Contents of the .txt File for a Sweep}
 \usage{
-ReadSweepData(file, sensors = c(""), n = 7)
+ReadSweepData(file, sensors = character(), n = 7)
 }
 \arguments{
 \item{file}{A character string, the path to a \code{.pos} file.}
@@ -12,7 +12,7 @@ ReadSweepData(file, sensors = c(""), n = 7)
 \item{sensors}{A character vector, names for sensors that were attached to
 the participant and connected to sockets in the Carstens Sensin box. The
 position of a name in this vector is interpreted as the number of the
-socket to which the sensor was connected. Default is \code{c("")}.}
+socket to which the sensor was connected. Default is \code{character()}.}
 
 \item{n}{A numeric, the number of data channels that are recorded
 per sensor. Default is \code{7}, which is consistent with Carstens data

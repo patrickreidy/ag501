@@ -1,6 +1,6 @@
 Package: ag501
 Title: Carstens AG501 Electromagnetic Articulograph
-Version: 0.0.6
+Version: 0.0.7
 Authors@R: as.person(c(
     "Patrick Reidy <reidy@utdallas.edu> [aut,cre]"
   ))
@@ -20,6 +20,7 @@ Imports:
     methods,
     purrr,
     readr,
+    rlang,
     signal,
     stringi,
     stringr,

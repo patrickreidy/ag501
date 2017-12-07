@@ -4,7 +4,7 @@
 \alias{ReadSweep}
 \title{Read the Positional Data Recorded During a Sweep}
 \usage{
-ReadSweep(sweep, sensors = c(""))
+ReadSweep(sweep, sensors = character())
 }
 \arguments{
 \item{sweep}{A character string, the path to and basename (without extension)
@@ -16,7 +16,7 @@ file that contains the positional data recorded for the sweep.}
 \item{sensors}{A character vector, names for sensors that were attached to
 the participant and connected to sockets in the Carstens Sensin box. The
 position of a name in this vector is interpreted as the number of the
-socket to which the sensor was connected. Default is \code{c("")}.}
+socket to which the sensor was connected. Default is \code{character()}.}
 }
 \value{
 A nested data frame with the following variables:

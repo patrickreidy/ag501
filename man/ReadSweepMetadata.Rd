@@ -4,7 +4,7 @@
 \alias{ReadSweepMetadata}
 \title{Read the Header of the .pos File for a Sweep}
 \usage{
-ReadSweepMetadata(file, sensors = c(""))
+ReadSweepMetadata(file, sensors = character())
 }
 \arguments{
 \item{file}{A character string, the path to a \code{.pos} file.}
@@ -12,7 +12,7 @@ ReadSweepMetadata(file, sensors = c(""))
 \item{sensors}{A character vector, names for sensors that were attached to
 the participant and connected to sockets in the Carstens Sensin box. The
 position of a name in this vector is interpreted as the number of the
-socket to which the sensor was connected. Default is \code{c("")}.}
+socket to which the sensor was connected. Default is \code{character()}.}
 }
 \value{
 A data tibble with the following variables:
