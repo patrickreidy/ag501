@@ -4,21 +4,23 @@
 \alias{ReadSweepData}
 \title{Read the Contents of the .txt File for a Sweep}
 \usage{
-ReadSweepData(file, sensors = character(), n = 7)
+ReadSweepData(txt, sensors = character(), n = 7)
 }
 \arguments{
-\item{file}{A character string, the path to a \code{.pos} file.}
+\item{txt}{A character string, the path to a \code{.txt} file.}
 
 \item{sensors}{A character vector, names for sensors that were attached to
 the participant and connected to sockets in the Carstens Sensin box. The
 position of a name in this vector is interpreted as the number of the
-socket to which the sensor was connected. Default is \code{character()}.}
+socket to which the sensor was connected. Default is \code{character()}.
+See \code{\link{FormatSensors}}.}
 
 \item{n}{A numeric, the number of data channels that are recorded
 per sensor. Default is \code{7}, which is consistent with Carstens data
 format \code{AG50xDATA_V003}, under which each sensor comprises data
 channels: \code{x}, \code{y}, \code{z}, \code{phi}, \code{theta},
-\code{rms}, \code{extra}.}
+\code{rms}, \code{extra}.
+See \code{\link{FormatChannels}}.}
 }
 \value{
 A data tibble, the names of whose variables are determined by

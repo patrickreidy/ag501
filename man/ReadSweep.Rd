@@ -4,19 +4,29 @@
 \alias{ReadSweep}
 \title{Read the Positional Data Recorded During a Sweep}
 \usage{
-ReadSweep(sweep, sensors = character())
+ReadSweep(pos = "", txt = "", sweep = NULL, sensors = character())
 }
 \arguments{
+\item{pos}{A character string, the path to a \code{.pos} file.
+Default is \code{""}.}
+
+\item{txt}{A character string, the path to a \code{.txt} file.
+Default is \code{""}.}
+
 \item{sweep}{A character string, the path to and basename (without extension)
 of a sweep. \code{stringr::str_interp("${sweep}.pos")} should point to
 a \code{.pos} file whose header contains the metadata about the sweep.
 \code{stringr::str_interp("${sweep}.txt")} should point to a \code{.txt}
-file that contains the positional data recorded for the sweep.}
+file that contains the positional data recorded for the sweep.
+Default is \code{NULL}. If not \code{NULL}, then \code{-.pos} and
+\code{-.txt} completions of \code{sweep} override any provided values of
+the \code{pos} and \code{txt} arguments.}
 
 \item{sensors}{A character vector, names for sensors that were attached to
 the participant and connected to sockets in the Carstens Sensin box. The
 position of a name in this vector is interpreted as the number of the
-socket to which the sensor was connected. Default is \code{character()}.}
+socket to which the sensor was connected. Default is \code{character()}.
+See \code{\link{FormatSensors}} and \code{\link{FormatChannels}}.}
 }
 \value{
 A nested data frame with the following variables:
@@ -83,9 +93,6 @@ A nested data frame with the following variables:
 }
 
 \itemize{
-  \item \code{TimeData}: A list-col, whose only entry is a data frame with
-    a single column, \code{Time}, whose values denote the times of the
-    samples of the position data.
   \item \code{PositionData}: A list-col, whose only entry is the data frame
     of the position data for the active sensors, returned by
     \code{\link{ReadSweepData}}.
