@@ -34,7 +34,6 @@
 #'     \item \code{\link{ReadSweepMetadata}}
 #'     \item \code{\link{ReadSweepData}}
 #'     \item \code{\link{ReadSweep}}
-#'     \item \code{\link{ReadBatch}}
 #'     \item \code{\link{Butterworth}}
 #'     \item \code{\link{CentralDifference}}
 #'     \item \code{\link{ForwardDifference}}

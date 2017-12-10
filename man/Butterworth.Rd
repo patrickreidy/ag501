@@ -2,16 +2,24 @@
 % Please edit documentation in R/filter.R
 \name{Butterworth}
 \alias{Butterworth}
-\alias{Butterworth,numeric-method}
-\alias{Butterworth,data.frame-method}
-\title{S4 Generic: Butterworth}
+\alias{Butterworth.numeric}
+\alias{Butterworth.data.frame}
+\alias{Butterworth.list}
+\title{S3 Generic: Butterworth}
 \usage{
-\S4method{Butterworth}{numeric}(x, samplingRate, order, cutoffs, type)
+Butterworth(x, ...)
 
-\S4method{Butterworth}{data.frame}(x, samplingRate, order, cutoffs, type, suffix)
+\method{Butterworth}{numeric}(x, samplingRate, order, cutoffs, type)
+
+\method{Butterworth}{data.frame}(x, samplingRate, order, cutoffs, type,
+  suffix = "")
+
+\method{Butterworth}{list}(x, samplingRate, order, cutoffs, type, suffix = "")
 }
 \arguments{
 \item{x}{A numeric vector or a data frame of numeric vectors.}
+
+\item{...}{Other arguments passed to methods.}
 
 \item{samplingRate}{An atomic numeric, the sampling rate of \code{x}, in
 hertz.}
@@ -25,7 +33,7 @@ stop-band filter, \code{cutoffs} should be of length 2, denoting the
 corner frequencies of the band.}
 
 \item{type}{A character string, either \code{"low"}, \code{"high"},
-\code{"pass"}, or \code{"stop"}. Default is \code{"low"}.}
+\code{"pass"}, or \code{"stop"}.}
 
 \item{suffix}{A character string. If \code{x} is a data frame, the names of the
 returned data frame are equal to the names of \code{x}, each suffixed by
