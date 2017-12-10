@@ -1,0 +1,16 @@
+2.182	wav	Tag1
+3.136	wav	Tag2
+4.277	wav	Tag3
+5.231	wav	Tag4
+6.455	wav	Tag5
+7.382	wav	Tag6
+8.568	wav	Tag7
+9.499	wav	Tag8
+10.715	wav	Tag9
+11.758	wav	Tag10
+13.093	wav	Tag11
+14.087	wav	Tag12
+15.328	wav	Tag13
+16.315	wav	Tag14
+17.536	wav	Tag15
+18.463	wav	Tag16

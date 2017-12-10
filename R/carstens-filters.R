@@ -31,5 +31,5 @@
 #'
 #' @export
 CarstensFilters <- function() {
-  tibble::as_tibble(carstensFilters)
+  tibble::as_tibble(carstens_filters)
 }
