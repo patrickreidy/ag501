@@ -5,7 +5,7 @@
 \title{List Sweeps}
 \usage{
 ListSweeps(path = ".", pattern = "*", fullNames = TRUE, simplify = TRUE,
-  recursive = FALSE)
+  recursive = FALSE, dropMissing = TRUE)
 }
 \arguments{
 \item{path}{A character vector of paths to directories that contain sweeps
@@ -33,6 +33,10 @@ are returned as elements of a list.}
 \item{recursive}{If \code{TRUE}, then the search recurses into subdirectories of
 elements of \code{param}. If \code{FALSE}, then the search only looks
 immediately in the directories listed in \code{path}.}
+
+\item{dropMissing}{If \code{TRUE}, then sweeps that are missing either a
+\code{.pos} or a \code{.txt} file are not listed. If \code{FALSE}, then
+sweeps with a missing file are listed.}
 }
 \value{
 If \code{simplify = TRUE}, a data table with the following variables:

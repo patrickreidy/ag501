@@ -26,6 +26,9 @@
 #' @param recursive If \code{TRUE}, then the search recurses into subdirectories of
 #'   elements of \code{param}. If \code{FALSE}, then the search only looks
 #'   immediately in the directories listed in \code{path}.
+#' @param dropMissing If \code{TRUE}, then sweeps that are missing either a
+#'   \code{.pos} or a \code{.txt} file are not listed. If \code{FALSE}, then
+#'   sweeps with a missing file are listed.
 #'
 #' @return If \code{simplify = TRUE}, a data table with the following variables:
 #'   \itemize{
@@ -38,7 +41,7 @@
 #'   Each element is a data table as described immediately above.
 #'
 #' @export
-ListSweeps <- function(path = ".", pattern = "*", fullNames = TRUE, simplify = TRUE, recursive = FALSE) {
+ListSweeps <- function(path = ".", pattern = "*", fullNames = TRUE, simplify = TRUE, recursive = FALSE, dropMissing = TRUE) {
   .ListSweepsInSinglePath <- function(.path, .pattern, .fn, .rec) {
     .files <- list.files(path = .path, pattern = .pattern, full.names = .fn, recursive = .rec)
     .pos <- grep(pattern = "\\.pos$", x = .files, value = TRUE)
@@ -51,9 +54,11 @@ ListSweeps <- function(path = ".", pattern = "*", fullNames = TRUE, simplify = T
       dplyr::full_join(x = .pos_tbl, y = .txt_tbl, by = "Sweep") %>%
       dplyr::mutate(N = ifelse(!is.na(.data$POS), 1, 0) + ifelse(!is.na(.data$TXT), 1, 0)) %>%
       dplyr::arrange(dplyr::desc(.data$N), .data$Sweep) %>%
-      dplyr::select(-.data$N) %>%
-      list()
-    .listed <- purrr::set_names(.sweeps, .path)
+      dplyr::select(-.data$N)
+    if (dropMissing) {
+      .sweeps <- dplyr::filter(.sweeps, !is.na(POS), !is.na(TXT))
+    }
+    .listed <- purrr::set_names(list(.sweeps), .path)
     return(.listed)
   }
   if (length(pattern) != length(path) & length(pattern) != 1) {
