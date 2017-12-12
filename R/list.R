@@ -49,9 +49,9 @@ ListSweeps <- function(path = ".", pattern = "*", fullNames = TRUE, simplify = T
                                TXT = .txt)
     .sweeps <-
       dplyr::full_join(x = .pos_tbl, y = .txt_tbl, by = "Sweep") %>%
-      dplyr::mutate(N = ifelse(!is.na(POS), 1, 0) + ifelse(!is.na(TXT), 1, 0)) %>%
-      dplyr::arrange(dplyr::desc(N), Sweep) %>%
-      dplyr::select(-N) %>%
+      dplyr::mutate(N = ifelse(!is.na(.data$POS), 1, 0) + ifelse(!is.na(.data$TXT), 1, 0)) %>%
+      dplyr::arrange(dplyr::desc(.data$N), .data$Sweep) %>%
+      dplyr::select(-.data$N) %>%
       list()
     .listed <- purrr::set_names(.sweeps, .path)
     return(.listed)
