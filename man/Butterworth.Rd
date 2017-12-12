@@ -5,21 +5,20 @@
 \alias{Butterworth.numeric}
 \alias{Butterworth.data.frame}
 \alias{Butterworth.list}
-\title{S3 Generic: Butterworth}
+\title{Butterworth Filter}
 \usage{
 Butterworth(x, ...)
 
-\method{Butterworth}{numeric}(x, samplingRate, order, cutoffs, type)
+\method{Butterworth}{numeric}(x, samplingRate, order, cutoffs, type, ...)
 
-\method{Butterworth}{data.frame}(x, samplingRate, order, cutoffs, type,
-  suffix = "")
+\method{Butterworth}{data.frame}(x, samplingRate, order, cutoffs, type, ...)
 
-\method{Butterworth}{list}(x, samplingRate, order, cutoffs, type, suffix = "")
+\method{Butterworth}{list}(x, samplingRate, order, cutoffs, type, ...)
 }
 \arguments{
 \item{x}{A numeric vector or a data frame of numeric vectors.}
 
-\item{...}{Other arguments passed to methods.}
+\item{...}{Placeholder for future methods.}
 
 \item{samplingRate}{An atomic numeric, the sampling rate of \code{x}, in
 hertz.}
@@ -34,10 +33,6 @@ corner frequencies of the band.}
 
 \item{type}{A character string, either \code{"low"}, \code{"high"},
 \code{"pass"}, or \code{"stop"}.}
-
-\item{suffix}{A character string. If \code{x} is a data frame, the names of the
-returned data frame are equal to the names of \code{x}, each suffixed by
-\code{suffix}. Default is \code{""}.}
 }
 \value{
 The filtered data.
