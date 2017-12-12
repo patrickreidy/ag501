@@ -5,7 +5,7 @@
 \title{Read the Positional Data Recorded During a Sweep}
 \usage{
 ReadSweep(pos = "", txt = "", sweep = NULL, sensors = character(),
-  dropExtra = TRUE)
+  dropExtra = TRUE, simplify = TRUE)
 }
 \arguments{
 \item{pos}{A character vector of paths to \code{.pos} files.}
@@ -28,10 +28,15 @@ is dropped from the data, since this channel is only a placeholder for
 future development by Carstens and contains no data.
 If \code{FALSE}, then the \code{extra} channels are kept.}
 
+\item{simplify}{If \code{TRUE}, then the data tables for the sweeps
+are row-binded together into a single data table.
+If \code{FALSE}, then the data tables for the sweeps are returned as
+elements of a list.}
+
 \item{pos}{A character vector of paths to \code{.txt} files.}
 }
 \value{
-A nested data frame with the following variables:
+A listnested data frame with the following variables:
 
 \itemize{
   \item \code{Sweep}: A character, the name of the sweep, which identifies

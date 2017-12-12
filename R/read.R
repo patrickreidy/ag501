@@ -339,13 +339,17 @@ ReadSweepData <- function(txt, sensors = character(), n = 7, dropExtra = TRUE) {
 #'   is dropped from the data, since this channel is only a placeholder for
 #'   future development by Carstens and contains no data.
 #'   If \code{FALSE}, then the \code{extra} channels are kept.
+#' @param simplify If \code{TRUE}, then the data tables for the sweeps
+#'   are row-binded together into a single data table.
+#'   If \code{FALSE}, then the data tables for the sweeps are returned as
+#'   elements of a list.
 #'
-#' @return A nested data frame with the following variables:
+#' @return A listnested data frame with the following variables:
 #' @template sweep-metadata
 #' @template sweep-data
 #'
 #' @export
-ReadSweep <- function(pos = "", txt = "", sweep = NULL, sensors = character(), dropExtra = TRUE) {
+ReadSweep <- function(pos = "", txt = "", sweep = NULL, sensors = character(), dropExtra = TRUE, simplify = TRUE) {
   .ReadSingleSweep <- function(.pos, .txt, .sens = sensors, .drop = dropExtra) {
     if (!is.character(.pos)) {
       stop(".ReadSingleSweep requires a character string as the .pos argument")
@@ -377,9 +381,9 @@ ReadSweep <- function(pos = "", txt = "", sweep = NULL, sensors = character(), d
                          length.out = nrow(.channel_data))
     .time_data <- tibble::tibble(Time = .time_samples)
     .position_data <- dplyr::bind_cols(.time_data, .channel_data)
-    .sweep <- dplyr::mutate(.metadata,
-                            PositionData = list(.position_data))
-    return(.sweep)
+    .sweep <- list(dplyr::mutate(.metadata, PositionData = list(.position_data)))
+    .named <- purrr::set_names(.sweep, stringr::str_replace(basename(.pos), "\\.pos$", ""))
+    return(.named)
   }
   if (!is.null(sweep)) {
     pos <- sprintf(fmt = "%s.pos", sweep)
@@ -390,25 +394,29 @@ ReadSweep <- function(pos = "", txt = "", sweep = NULL, sensors = character(), d
                          length(pos), length(txt))
     stop(.stop_msg)
   }
-  if (length(txt) > 1) {
-    if (is.character(sensors)) {
-      sensors <- rep(list(sensors), times = length(txt))
+
+  if (is.character(sensors)) {
+    sensors <- list(sensors)
+  }
+  if (length(sensors) == 1) {
+    sensors <- rep(sensors, times = length(txt))
+  } else if (length(sensors) != length(txt)) {
+    .stop_msg <- sprintf("length of @sensors list (%d) must be either length of @txt (%d) or 1.",
+                         length(sensors), length(txt))
+    stop(.stop_msg)
+  }
+  .sweeps <- purrr::pmap(list(pos, txt, sensors), function(.p, .t, .s) {
+    .ReadSingleSweep(.pos = .p, .txt = .t, .sens = .s, .drop = dropExtra)
+  })
+
+  if (simplify) {
+    if (length(.sweeps) == 1) {
+      .sweeps <- purrr::flatten_df(.sweeps)
     } else {
-      if (is.list(sensors)) {
-        if (length(sensors) == 1) {
-          sensors <- rep(sensors, times = length(txt))
-        } else if (length(sensors) != length(txt)) {
-          .stop_msg <- sprintf("length of @sensors list (%d) must be either length of @txt (%d) or 1.",
-                               length(sensors), length(txt))
-          stop(.stop_msg)
-        }
-      }
+      .sweeps <- purrr::reduce(.sweeps, dplyr::bind_rows)
     }
-    .sweeps <- purrr::pmap(list(pos, txt, sensors), function(.p, .t, .s) {
-      .ReadSingleSweep(.pos = .p, .txt = .t, .sens = .s, .drop = dropExtra)
-    })
   } else {
-    .sweeps <- .ReadSingleSweep(.pos = pos, .txt = txt, .sens = sensors, .drop = dropExtra)
+    .sweeps <- purrr::flatten(.sweeps)
   }
   return(.sweeps)
 }
