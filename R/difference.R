@@ -3,7 +3,7 @@
 # Forward Difference          ##################################################
 ################################################################################
 
-#' S4 Generic: ForwardDifference
+#' Forward Difference
 #'
 #' Given a numeric series \code{x}, compute its \code{n}-offset forward
 #' difference \code{y}, such that \code{y[i] = x[i+n] - x[i]}.
@@ -13,63 +13,77 @@
 #' @return The forward difference of \code{x} if \code{x} is numeric, or of
 #'   each column of \code{x} if \code{x} is a data frame.
 #'
-#' @name ForwardDifference
 #' @export
-methods::setGeneric(
-  name = "ForwardDifference",
-  def = function(x, ...) {
-    standardGeneric("ForwardDifference")
-  }
-)
+ForwardDifference <- function(x, ...) {
+  UseMethod("ForwardDifference", x)
+}
 
 
-#' @param samplingRate An atomic numeric, the sampling rate of \code{x}, in
-#'   hertz. The raw forward difference of \code{x} is divided by the sampling
-#'   rate so that the forward difference can be interepreted as an estimate of
-#'   the derivative of \code{x}. Default is \code{1}.
 #' @param n An atomic numeric, the number of samples forward from the current
 #'   sample used in the forward difference. Default is \code{1}.
 #' @param order An atomic numeric, the number of times the forward-difference
 #'   operator is applied to \code{x}. Default is \code{1}.
+#' @param samplingRate An atomic numeric, the sampling rate of \code{x}, in
+#'   hertz. The raw forward difference of \code{x} is divided by the sampling
+#'   rate so that the forward difference can be interepreted as an estimate of
+#'   the derivative of \code{x}. Default is \code{n}, which yields the raw
+#'   forward difference.
+#' @param ... Placeholder for future methods.
 #'
-#' @usage \S4method{ForwardDifference}{numeric}(x, samplingRate, n, order)
-#'
-#' @name ForwardDifference,numeric-method
 #' @rdname ForwardDifference
-methods::setMethod(
-  f = "ForwardDifference",
-  signature = c(x = "numeric"),
-  definition = function(x, samplingRate = 1, n = 1, order = 1) {
-    .x <- x
-    .o <- 0
-    while (.o < order) {
-      .x <- (dplyr::lead(x = .x, n = n) - .x) / (n / samplingRate)
-      .o <- .o + 1
-    }
-    return(.x)
-
+#' @export
+ForwardDifference.numeric <- function(x, n = 1, order = 1, samplingRate = n, ...) {
+  .x <- x
+  .o <- 0
+  while (.o < order) {
+    .x <- (dplyr::lead(x = .x, n = n) - .x) / (n / samplingRate)
+    .o <- .o + 1
   }
-)
+  return(.x)
+}
 
 
-#' @param suffix A character string. If \code{x} is a data frame, the names of the
-#'   returned data frame are equal to the names of \code{x}, each suffixed by
-#'   \code{suffix}. Default is \code{""}.
-#'
-#' @usage \S4method{ForwardDifference}{data.frame}(x, samplingRate, n, order, suffix)
-#'
-#' @name ForwardDifference,data.frame-method
 #' @rdname ForwardDifference
-methods::setMethod(
-  f = "ForwardDifference",
-  signature = c(x = "data.frame"),
-  definition = function(x, samplingRate = 1, n = 1, order = 1, suffix = "") {
-    .diffed <- purrr::map_df(x, ForwardDifference,
-                             samplingRate = samplingRate, n = n)
-    .named <- purrr::set_names(.diffed, stringr::str_c(names(.diffed), suffix))
-    return(.named)
+#' @export
+ForwardDifference.data.frame <- function(x, n = 1, order = 1, ...) {
+  .x <- x
+  .o <- 0
+  while(.o < order) {
+    .data <- dplyr::select(.x, -.data$Time)
+    .dx <- purrr::map_df(.data, function(.d) {
+      ForwardDifference(.d, n = n, order = 1) / ForwardDifference(.x$Time, n = n, order = 1)
+    })
+    .x <- dplyr::bind_cols(dplyr::select(.x, .data$Time), .dx)
+    .o <- .o + 1
   }
-)
+  return(.x)
+}
+
+
+#' @rdname ForwardDifference
+#' @export
+ForwardDifference.list <- function(x, n = 1, order = 1, ...) {
+  if (length(n) != length(x) & length(n) != 1) {
+    .stop_msg <- sprintf("length of @n (%d) must be either length of @x (%d) or 1.",
+                         length(n), length(x))
+    stop(.stop_msg)
+  } else if (length(n) == 1) {
+    n <- rep(n, length(x))
+  }
+  if (length(order) != length(x) & length(order) != 1) {
+    .stop_msg <- sprintf("length of @order (%d) must be either length of @x (%d) or 1.",
+                         length(order), length(x))
+    stop(.stop_msg)
+  } else if (length(order) == 1) {
+    order <- rep(order, length(x))
+  }
+  .differenced <-
+    purrr::pmap(list(x, n, order), function(.x, .n, .o) {
+      ForwardDifference(x = .x, n = .n, order = .o)
+    })
+  return(.differenced)
+}
+
 
 
 
@@ -78,68 +92,85 @@ methods::setMethod(
 # Central Difference          ##################################################
 ################################################################################
 
-#' S4 Generic: CentralDifference
+#' Central Difference
 #'
 #' Given a numeric series \code{x}, compute its \code{n}-offset central
 #' difference \code{y}, such that \code{y[i] = x[i+n] - x[i-n]}.
 #'
 #' @param x A numeric vector or a data frame of numeric vectors.
+#'
 #' @return The central difference of \code{x} if \code{x} is numeric, or of
 #'   each column of \code{x} if \code{x} is a data frame.
 #'
-#' @name CentralDifference
 #' @export
-methods::setGeneric(
-  name = "CentralDifference",
-  def = function(x, ...) {
-    standardGeneric("CentralDifference")
-  }
-)
+CentralDifference <- function(x, ...) {
+  UseMethod("CentralDifference", x)
+}
 
 
-#' @param samplingRate An atomic numeric, the sampling rate of \code{x}, in
-#'   hertz. The raw central difference of \code{x} is divided by the sampling
-#'   rate so that the central difference can be interepreted as an estimate of
-#'   the derivative of \code{x}. Default is \code{1}.
 #' @param n An atomic numeric, the number of samples offset from the current
 #'   sample used in the central difference. Default is \code{1}.
 #' @param order An atomic numeric, the number of times the central-difference
 #'   operator is applied to \code{x}. Default is \code{1}.
+#' @param samplingRate An atomic numeric, the sampling rate of \code{x}, in
+#'   hertz. The raw central difference of \code{x} is divided by the sampling
+#'   rate so that the central difference can be interepreted as an estimate of
+#'   the derivative of \code{x}. Default is \code{2*n}, which yields the raw
+#'   central difference.
+#' @param ... Placeholder for future methods.
 #'
-#' @usage \S4method{CentralDifference}{numeric}(x, samplingRate, n, order)
-#'
-#' @name CentralDifference,numeric-method
 #' @rdname CentralDifference
-methods::setMethod(
-  f = "CentralDifference",
-  signature = c(x = "numeric"),
-  definition = function(x, samplingRate = 1, n = 1, order = 1) {
-    .x <- x
-    .o <- 0
-    while (.o < order) {
-      .x <- (dplyr::lead(x = .x, n = n) - dplyr::lag(x = .x, n = n)) / (2*n/samplingRate)
-      .o <- .o + 1
-    }
-    return(.x)
+#' @export
+CentralDifference.numeric <- function(x, n = 1, order = 1, samplingRate = 2*n, ...) {
+  .x <- x
+  .o <- 0
+  while (.o < order) {
+    .x <- (dplyr::lead(x = .x, n = n) - dplyr::lag(x = .x, n = n)) / (2*n / samplingRate)
+    .o <- .o + 1
   }
-)
+  return(.x)
+}
 
 
-#' @param suffix A character string. If \code{x} is a data frame, the names of the
-#'   returned data frame are equal to the names of \code{x}, each suffixed by
-#'   \code{suffix}. Default is \code{""}.
-#'
-#' @usage \S4method{CentralDifference}{data.frame}(x, samplingRate, n, order, suffix)
-#'
-#' @name CentralDifference,data.frame-method
 #' @rdname CentralDifference
-methods::setMethod(
-  f = "CentralDifference",
-  signature = c(x = "data.frame"),
-  definition = function(x, samplingRate = 1, n = 1, order = 1, suffix = "") {
-    .diffed <- purrr::map_df(x, CentralDifference,
-                             samplingRate = samplingRate, n = n, order = order)
-    .named <- purrr::set_names(.diffed, stringr::str_c(names(.diffed), suffix))
-    return(.named)
+#' @export
+CentralDifference.data.frame <- function(x, n = 1, order = 1, ...) {
+  .x <- x
+  .o <- 0
+  while(.o < order) {
+    .data <- dplyr::select(.x, -.data$Time)
+    .dx <- purrr::map_df(.data, function(.d) {
+      CentralDifference(.d, n = n, order = 1) / CentralDifference(.x$Time, n = n, order = 1)
+    })
+    .x <- dplyr::bind_cols(dplyr::select(.x, .data$Time), .dx)
+    .o <- .o + 1
   }
-)
+  return(.x)
+}
+
+
+#' @rdname ForwardDifference
+#' @export
+CentralDifference.list <- function(x, n = 1, order = 1, ...) {
+  if (length(n) != length(x) & length(n) != 1) {
+    .stop_msg <- sprintf("length of @n (%d) must be either length of @x (%d) or 1.",
+                         length(n), length(x))
+    stop(.stop_msg)
+  } else if (length(n) == 1) {
+    n <- rep(n, length(x))
+  }
+  if (length(order) != length(x) & length(order) != 1) {
+    .stop_msg <- sprintf("length of @order (%d) must be either length of @x (%d) or 1.",
+                         length(order), length(x))
+    stop(.stop_msg)
+  } else if (length(order) == 1) {
+    order <- rep(order, length(x))
+  }
+  .differenced <-
+    purrr::pmap(list(x, n, order), function(.x, .n, .o) {
+      CentralDifference(x = .x, n = .n, order = .o)
+    })
+  return(.differenced)
+}
+
+

@@ -2,21 +2,27 @@
 % Please edit documentation in R/difference.R
 \name{ForwardDifference}
 \alias{ForwardDifference}
-\alias{ForwardDifference,numeric-method}
-\alias{ForwardDifference,data.frame-method}
-\title{S4 Generic: ForwardDifference}
+\alias{ForwardDifference.numeric}
+\alias{ForwardDifference.data.frame}
+\alias{ForwardDifference.list}
+\alias{CentralDifference.list}
+\title{Forward Difference}
 \usage{
-\S4method{ForwardDifference}{numeric}(x, samplingRate, n, order)
+ForwardDifference(x, ...)
 
-\S4method{ForwardDifference}{data.frame}(x, samplingRate, n, order, suffix)
+\method{ForwardDifference}{numeric}(x, n = 1, order = 1, samplingRate = n,
+  ...)
+
+\method{ForwardDifference}{data.frame}(x, n = 1, order = 1, ...)
+
+\method{ForwardDifference}{list}(x, n = 1, order = 1, ...)
+
+\method{CentralDifference}{list}(x, n = 1, order = 1, ...)
 }
 \arguments{
 \item{x}{A numeric vector or a data frame of numeric vectors.}
 
-\item{samplingRate}{An atomic numeric, the sampling rate of \code{x}, in
-hertz. The raw forward difference of \code{x} is divided by the sampling
-rate so that the forward difference can be interepreted as an estimate of
-the derivative of \code{x}. Default is \code{1}.}
+\item{...}{Placeholder for future methods.}
 
 \item{n}{An atomic numeric, the number of samples forward from the current
 sample used in the forward difference. Default is \code{1}.}
@@ -24,9 +30,11 @@ sample used in the forward difference. Default is \code{1}.}
 \item{order}{An atomic numeric, the number of times the forward-difference
 operator is applied to \code{x}. Default is \code{1}.}
 
-\item{suffix}{A character string. If \code{x} is a data frame, the names of the
-returned data frame are equal to the names of \code{x}, each suffixed by
-\code{suffix}. Default is \code{""}.}
+\item{samplingRate}{An atomic numeric, the sampling rate of \code{x}, in
+hertz. The raw forward difference of \code{x} is divided by the sampling
+rate so that the forward difference can be interepreted as an estimate of
+the derivative of \code{x}. Default is \code{n}, which yields the raw
+forward difference.}
 }
 \value{
 The forward difference of \code{x} if \code{x} is numeric, or of
