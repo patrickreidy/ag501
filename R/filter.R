@@ -45,7 +45,6 @@ Butterworth.numeric <- function(x, samplingRate, order, cutoffs, type, ...) {
 }
 
 
-
 #' @rdname Butterworth
 #' @export
 Butterworth.data.frame <- function(x, samplingRate, order, cutoffs, type, ...) {

@@ -323,7 +323,7 @@ ReadSweepData <- function(txt, sensors = character(), n = 7, dropExtra = TRUE) {
 #' character vectors.
 #'
 #' @param pos A character vector of paths to \code{.pos} files.
-#' @param pos A character vector of paths to \code{.txt} files.
+#' @param txt A character vector of paths to \code{.txt} files.
 #' @param sweep A character vector, the path to and basenames (without extensions)
 #'   of sweeps. The names of the \code{.pos} and \code{.txt} files for the
 #'   sweeps will be constructed by appending the appropriate file extensions.

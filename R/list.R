@@ -56,7 +56,7 @@ ListSweeps <- function(path = ".", pattern = "*", fullNames = TRUE, simplify = T
       dplyr::arrange(dplyr::desc(.data$N), .data$Sweep) %>%
       dplyr::select(-.data$N)
     if (dropMissing) {
-      .sweeps <- dplyr::filter(.sweeps, !is.na(POS), !is.na(TXT))
+      .sweeps <- dplyr::filter(.sweeps, !is.na(.data$POS), !is.na(.data$TXT))
     }
     .listed <- purrr::set_names(list(.sweeps), .path)
     return(.listed)

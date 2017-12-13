@@ -10,6 +10,8 @@ ReadSweep(pos = "", txt = "", sweep = NULL, sensors = character(),
 \arguments{
 \item{pos}{A character vector of paths to \code{.pos} files.}
 
+\item{txt}{A character vector of paths to \code{.txt} files.}
+
 \item{sweep}{A character vector, the path to and basenames (without extensions)
 of sweeps. The names of the \code{.pos} and \code{.txt} files for the
 sweeps will be constructed by appending the appropriate file extensions.
@@ -32,8 +34,6 @@ If \code{FALSE}, then the \code{extra} channels are kept.}
 are row-binded together into a single data table.
 If \code{FALSE}, then the data tables for the sweeps are returned as
 elements of a list.}
-
-\item{pos}{A character vector of paths to \code{.txt} files.}
 }
 \value{
 A listnested data frame with the following variables:
