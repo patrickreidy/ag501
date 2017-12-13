@@ -87,7 +87,7 @@ TT.list <- function(x, samplingRate, ...) {
   return(.tt)
 }
 
-tt<- greek %>%
+greek %>%
   dplyr::mutate(LowPassData = Butterworth(PositionData, SamplingRate,
                                           order = 5, cutoffs = 20, type = "low")) %>%
   dplyr::mutate(WordData = TimeSlice(LowPassData, from = Onset-0.5, to = Offset+0.5)) %>%
@@ -114,7 +114,7 @@ LA.list <- function(x, ...) {
   return(.la)
 }
 
-la <- greek %>%
+greek %>%
   dplyr::filter(Cluster == "sp") %>%
   dplyr::mutate(LowPassData = Butterworth(PositionData, SamplingRate,
                                           order = 5, cutoffs = 20, type = "low")) %>%
