@@ -6,13 +6,13 @@
 \alias{ag501-package}
 \title{ag501: Carstens AG501 Electromagnetic Articulograph}
 \description{
-Analyze kinematic data recorded from a Carstens AG501
-electromagnetic articulograph (EMA). Metadata and positional data recorded
-from EMA sensors are structured as a nested data frame. Functions provided
-for filtering data (e.g., low-pass Butterworth filter) or for calculating
-derived time-series from the position data (e.g., velocity or acceleration
-from forward or central differencing) are defined with data-first argument
-lists, making them compatible with the tidyverse.
+An R package for reading and analyzing kinematic data recorded from a Carstens
+AG501 electromagnetic articulograph (EMA). Metadata and positional data
+(x-, y-, and z-dimensions, and rotation) recorded from EMA sensors are
+structured as a nested data frame. Functions are provided for filtering
+positional data (e.g., low-pass Butterworth filter) or for calculating derived
+time-series (e.g., velocity or acceleration profiles from either forward or
+central differencing).
 }
 \section{Imports}{
 
@@ -40,6 +40,7 @@ lists, making them compatible with the tidyverse.
     \item \code{\link{ReadSweepData}}
     \item \code{\link{ReadSweep}}
     \item \code{\link{Butterworth}}
+    \item \code{\link{TimeSlice}}
     \item \code{\link{CentralDifference}}
     \item \code{\link{ForwardDifference}}
   }
