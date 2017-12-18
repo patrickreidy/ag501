@@ -158,14 +158,15 @@ greek %>%
 # 4  0022 spala ... <tibble [361 x 49]> <tibble [361 x 10]>
 ```
 
-#### Find gestural landmarks for movement of the TT sensor in the sagittal plane
+#### Find gestural landmarks for movement of the TT sensor
 ```r
+# Landmarks in the sagittal plane only
 greek %>%
   dplyr::mutate(LowPassData = Butterworth(SensorData, SamplingRate,
                                           order = 5, cutoffs = 20, type = "low")) %>%
   dplyr::mutate(WordData = TimeSlice(LowPassData, from = Onset-0.25, to = Offset+0.25)) %>%
   dplyr::mutate(TT = TT(WordData, SamplingRate)) %>%
-  dplyr::mutate(LandmarksTT = FindLandmarks(TT, matches = "TTxz_spd", onsetNear = Onset)) %>%
+  dplyr::mutate(LandmarksTT = FindLandmarks(TT, channels = "TTxz_spd", onsetNear = Onset)) %>%
   dplyr::select(Sweep, Word, Onset, SamplingRate, LandmarksTT) %>%
   tidyr::unnest()
 # # A tibble: 16 x 8
@@ -187,4 +188,28 @@ greek %>%
 # 14  0022 spala  8.004          250 TTxz_spd   TargetOnset  8.140 36.79614
 # 15  0022 spala  8.004          250 TTxz_spd  TargetOffset  8.236 30.07731
 # 16  0022 spala  8.004          250 TTxz_spd GestureOffset  8.412 56.81165
+
+# Landmarks in vertical dimension, sagittal plane, and three-dimensions
+greek %>%
+  dplyr::mutate(LowPassData = Butterworth(SensorData, SamplingRate,
+                                          order = 5, cutoffs = 20, type = "low")) %>%
+  dplyr::mutate(WordData = TimeSlice(LowPassData, from = Onset-0.25, to = Offset+0.25)) %>%
+  dplyr::mutate(TT = TT(WordData, SamplingRate)) %>%
+  dplyr::mutate(LandmarksTT = FindLandmarks(TT, matches = "_spd", onsetNear = Onset)) %>%
+  dplyr::select(Sweep, Word, Onset, SamplingRate, LandmarksTT) %>%
+  tidyr::unnest()
+# # A tibble: 48 x 8
+#    Sweep  Word  Onset SamplingRate   Channel      Landmark   Time    Value
+#    <chr> <chr>  <dbl>        <dbl>     <chr>         <chr>  <dbl>    <dbl>
+#  1  0021 skavi 15.328          250   TTz_spd  GestureOnset 15.316 27.60756
+#  2  0021 skavi 15.328          250   TTz_spd   TargetOnset 15.476 23.27646
+#  3  0021 skavi 15.328          250   TTz_spd  TargetOffset 15.500 23.80788
+#  4  0021 skavi 15.328          250   TTz_spd GestureOffset 15.692 22.94749
+#  5  0021 skavi 15.328          250  TTxz_spd  GestureOnset 15.328 53.24821
+#  6  0021 skavi 15.328          250  TTxz_spd   TargetOnset 15.472 37.50784
+#  7  0021 skavi 15.328          250  TTxz_spd  TargetOffset 15.500 26.18081
+#  8  0021 skavi 15.328          250  TTxz_spd GestureOffset 15.696 31.36240
+#  9  0021 skavi 15.328          250 TTxyz_spd  GestureOnset 15.328 53.24979
+# 10  0021 skavi 15.328          250 TTxyz_spd   TargetOnset 15.472 38.08035
+# # ... with 38 more rows
 ```

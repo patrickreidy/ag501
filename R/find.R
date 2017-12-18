@@ -78,14 +78,15 @@ FindMaxima.data.frame <- function(x, channels = NULL, matches = NULL, from = -In
 #' @rdname FindMaxima
 #' @export
 FindMaxima.list <- function(x, channels = NULL, matches = NULL, from = -Inf, to = Inf, alpha = 0.1, ...) {
-  if (!is.null(matches)) {
-    if (length(matches) == 1) {
-      matches <- rep(matches, times = length(x))
-    } else if (length(matches) != length(x)) {
-      .stop_msg <- sprintf("length of @matches (%d) must be either length of @x (%d) or 1.",
-                           length(matches), length(x))
-      stop(.stop_msg)
-    }
+  if (!is.list(matches)) {
+    matches <- list(matches)
+  }
+  if (length(matches) == 1) {
+    matches <- rep(matches, times = length(x))
+  } else if (length(matches) != length(x)) {
+    .stop_msg <- sprintf("length of @matches (%d) must be either length of @x (%d) or 1.",
+                         length(matches), length(x))
+    stop(.stop_msg)
   }
   if (!is.list(channels)) {
     channels <- list(channels)
@@ -207,14 +208,15 @@ FindMinima.data.frame <- function(x, channels = NULL, matches = NULL, from = -In
 #' @rdname FindMinima
 #' @export
 FindMinima.list <- function(x, channels = NULL, matches = NULL, from = -Inf, to = Inf, ...) {
-  if (!is.null(matches)) {
-    if (length(matches) == 1) {
-      matches <- rep(matches, times = length(x))
-    } else if (length(matches) != length(x)) {
-      .stop_msg <- sprintf("length of @matches (%d) must be either length of @x (%d) or 1.",
-                           length(matches), length(x))
-      stop(.stop_msg)
-    }
+  if (!is.list(matches)) {
+    matches <- list(matches)
+  }
+  if (length(matches) == 1) {
+    matches <- rep(matches, times = length(x))
+  } else if (length(matches) != length(x)) {
+    .stop_msg <- sprintf("length of @matches (%d) must be either length of @x (%d) or 1.",
+                         length(matches), length(x))
+    stop(.stop_msg)
   }
   if (!is.list(channels)) {
     channels <- list(channels)
@@ -394,6 +396,9 @@ FindLandmarks.data.frame <- function(x, channels = NULL, matches = NULL, from = 
 #' @rdname FindLandmarks
 #' @export
 FindLandmarks.list <- function(x, channels = NULL, matches = NULL, from = -Inf, to = Inf, onsetNear = NULL, targetNear = NULL, theta = 0.2, alpha = 0.1, ...) {
+  if (!is.list(matches)) {
+    matches <- list(matches)
+  }
   if (!is.null(matches)) {
     if (length(matches) == 1) {
       matches <- rep(matches, times = length(x))
