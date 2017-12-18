@@ -38,60 +38,54 @@ sweeps <- ReadSweep(GreekClusters()$POS, GreekClusters()$TXT, sensors = sensor_a
 
 greek <- dplyr::bind_cols(
   dplyr::select(GreekClusters(), Sweep, Word, Cluster, Onset, Offset),
-  dplyr::select(sweeps, SamplingRate, PositionData)
+  dplyr::select(sweeps, SamplingRate, SensorData)
 )
 ```
 
-#### Apply a low-pass 5th-order Butterworth filter to all channels in PositionData
+#### Apply a low-pass 5th-order Butterworth filter to all channels in SensorData
 ```r
 greek %>%
-  dplyr::mutate(LowPassData = Butterworth(PositionData, SamplingRate,
+  dplyr::mutate(LowPassData = Butterworth(SensorData, SamplingRate,
                                           order = 5, cutoffs = 20, type = "low"))
+# # A tibble: 4 x 8
+#   Sweep  Word Cluster  Onset Offset SamplingRate            SensorData           LowPassData
+#   <chr> <chr>   <chr>  <dbl>  <dbl>        <dbl>                <list>                <list>
+# 1  0021 skavi      sk 15.328 16.315          250 <tibble [5,021 x 49]> <tibble [5,021 x 49]>
+# 2  0022 skavi      sk 14.310 15.356          250 <tibble [4,740 x 49]> <tibble [4,740 x 49]>
+# 3  0021 spala      sp  6.455  7.382          250 <tibble [5,021 x 49]> <tibble [5,021 x 49]>
+# 4  0022 spala      sp  8.004  8.947          250 <tibble [4,740 x 49]> <tibble [4,740 x 49]>
 ```
 
-#### Time-slice the low-pass filtered data to the interval 0.5 seconds before and after the word
+#### Time-slice the low-pass filtered data to the interval 0.25 seconds before and after the word
 ```r
 greek %>%
-  dplyr::mutate(LowPassData = Butterworth(PositionData, SamplingRate,
+  dplyr::mutate(LowPassData = Butterworth(SensorData, SamplingRate,
                                           order = 5, cutoffs = 20, type = "low")) %>%
-  dplyr::mutate(WordData = TimeSlice(LowPassData, from = Onset-0.5, to = Offset+0.5))
+  dplyr::mutate(WordData = TimeSlice(LowPassData, from = Onset-0.25, to = Offset+0.25))
+# # A tibble: 4 x 9
+#   Sweep  Word ...            SensorData           LowPassData            WordData
+#   <chr> <chr> ...                <list>                <list>              <list>
+# 1  0021 skavi ... <tibble [5,021 x 49]> <tibble [5,021 x 49]> <tibble [372 x 49]>
+# 2  0022 skavi ... <tibble [4,740 x 49]> <tibble [4,740 x 49]> <tibble [387 x 49]>
+# 3  0021 spala ... <tibble [5,021 x 49]> <tibble [5,021 x 49]> <tibble [356 x 49]>
+# 4  0022 spala ... <tibble [4,740 x 49]> <tibble [4,740 x 49]> <tibble [361 x 49]>
 ```
 
 #### Estimate velocity and acceleration profiles for each channel in WordData
 ```r
 greek %>%
-  dplyr::mutate(LowPassData = Butterworth(PositionData, SamplingRate,
+  dplyr::mutate(LowPassData = Butterworth(SensorData, SamplingRate,
                                           order = 5, cutoffs = 20, type = "low")) %>%
-  dplyr::mutate(WordData = TimeSlice(LowPassData, from = Onset-0.5, to = Offset+0.5)) %>%
+  dplyr::mutate(WordData = TimeSlice(LowPassData, from = Onset-0.25, to = Offset+0.25)) %>%
   dplyr::mutate(VelocityData = CentralDifference(WordData, n = 1, order = 1)) %>%
   dplyr::mutate(AccelerationData = CentralDifference(WordData, n = 1, order = 2))
-```
-
-#### Compute tongue-tip speed in sagittal (xz) plane, which is relevant for /s/
-```r
-TT <- function(x, ...) {
-  UseMethod("TT", x)
-}
-
-TT.data.frame <- function(x, samplingRate, ...) {
-  .tt <- 
-    dplyr::select(x, Time, TTx, TTz) %>%
-    dplyr::mutate(TTx_vel = CentralDifference(TTx, samplingRate = samplingRate)) %>%
-    dplyr::mutate(TTz_vel = CentralDifference(TTz, samplingRate = samplingRate)) %>%
-    dplyr::mutate(TTxz_spd = sqrt(TTx_vel^2 + TTz_vel^2))
-  return(.tt)
-}
-
-TT.list <- function(x, samplingRate, ...) {
-  .tt <- purrr::map2(x, samplingRate, TT)
-  return(.tt)
-}
-
-greek %>%
-  dplyr::mutate(LowPassData = Butterworth(PositionData, SamplingRate,
-                                          order = 5, cutoffs = 20, type = "low")) %>%
-  dplyr::mutate(WordData = TimeSlice(LowPassData, from = Onset-0.5, to = Offset+0.5)) %>%
-  dplyr::mutate(TT = TT(WordData, SamplingRate))
+# # A tibble: 4 x 11
+#   Sweep  Word ...            WordData        VelocityData    AccelerationData
+#   <chr> <chr> ...              <list>              <list>              <list>
+# 1  0021 skavi ... <tibble [372 x 49]> <tibble [372 x 49]> <tibble [372 x 49]>
+# 2  0022 skavi ... <tibble [387 x 49]> <tibble [387 x 49]> <tibble [387 x 49]>
+# 3  0021 spala ... <tibble [356 x 49]> <tibble [356 x 49]> <tibble [356 x 49]>
+# 4  0022 spala ... <tibble [361 x 49]> <tibble [361 x 49]> <tibble [361 x 49]>
 ```
 
 #### Compute lip aperture in vertical dimension, sagittal plane, and three dimensions
@@ -116,9 +110,81 @@ LA.list <- function(x, ...) {
 
 greek %>%
   dplyr::filter(Cluster == "sp") %>%
-  dplyr::mutate(LowPassData = Butterworth(PositionData, SamplingRate,
+  dplyr::mutate(LowPassData = Butterworth(SensorData, SamplingRate,
                                           order = 5, cutoffs = 20, type = "low")) %>%
-  dplyr::mutate(WordData = TimeSlice(LowPassData, from = Onset-0.5, to = Offset+0.5)) %>%
+  dplyr::mutate(WordData = TimeSlice(LowPassData, from = Onset-0.25, to = Offset+0.25)) %>%
   dplyr::mutate(LA = LA(WordData))
+# # A tibble: 2 x 10
+#   Sweep  Word ...            WordData                  LA
+#   <chr> <chr> ...              <list>              <list>
+# 1  0021 spala ... <tibble [356 x 49]> <tibble [356 x 10]>
+# 2  0022 spala ... <tibble [361 x 49]> <tibble [361 x 10]>
 ```
 
+#### Compute tongue-tip speed in sagittal (xz) plane, which is relevant for /s/
+```r
+TT <- function(x, ...) {
+  UseMethod("TT", x)
+}
+
+TT.data.frame <- function(x, samplingRate, ...) {
+  .tt <- 
+    dplyr::select(x, Time, TTx, TTy, TTz) %>%
+    dplyr::mutate(TTx_vel = CentralDifference(TTx, samplingRate = samplingRate)) %>%
+    dplyr::mutate(TTy_vel = CentralDifference(TTy, samplingRate = samplingRate)) %>%
+    dplyr::mutate(TTz_vel = CentralDifference(TTz, samplingRate = samplingRate)) %>%
+    dplyr::mutate(TTz_spd = sqrt(TTz_vel^2)) %>%
+    dplyr::mutate(TTxz_spd = sqrt(TTx_vel^2 + TTz_vel^2)) %>%
+    dplyr::mutate(TTxyz_spd = sqrt(TTx_vel^2 + TTy_vel^2 + TTz_vel^2))
+  return(.tt)
+}
+
+TT.list <- function(x, samplingRate, ...) {
+  .tt <- purrr::map2(x, samplingRate, TT)
+  return(.tt)
+}
+
+greek %>%
+  dplyr::mutate(LowPassData = Butterworth(SensorData, SamplingRate,
+                                          order = 5, cutoffs = 20, type = "low")) %>%
+  dplyr::mutate(WordData = TimeSlice(LowPassData, from = Onset-0.25, to = Offset+0.25)) %>%
+  dplyr::mutate(TT = TT(WordData, SamplingRate))
+# # A tibble: 4 x 10
+#   Sweep  Word ...            WordData                  TT
+#   <chr> <chr> ...              <list>              <list>
+# 1  0021 skavi ... <tibble [372 x 49]> <tibble [372 x 10]>
+# 2  0022 skavi ... <tibble [387 x 49]> <tibble [387 x 10]>
+# 3  0021 spala ... <tibble [356 x 49]> <tibble [356 x 10]>
+# 4  0022 spala ... <tibble [361 x 49]> <tibble [361 x 10]>
+```
+
+#### Find gestural landmarks for movement of the TT sensor in the sagittal plane
+```r
+greek %>%
+  dplyr::mutate(LowPassData = Butterworth(SensorData, SamplingRate,
+                                          order = 5, cutoffs = 20, type = "low")) %>%
+  dplyr::mutate(WordData = TimeSlice(LowPassData, from = Onset-0.25, to = Offset+0.25)) %>%
+  dplyr::mutate(TT = TT(WordData, SamplingRate)) %>%
+  dplyr::mutate(LandmarksTT = FindLandmarks(TT, matches = "TTxz_spd", onsetNear = Onset)) %>%
+  dplyr::select(Sweep, Word, Onset, SamplingRate, LandmarksTT) %>%
+  tidyr::unnest()
+# # A tibble: 16 x 8
+#    Sweep  Word  Onset SamplingRate  Channel      Landmark   Time    Value
+#    <chr> <chr>  <dbl>        <dbl>    <chr>         <chr>  <dbl>    <dbl>
+#  1  0021 skavi 15.328          250 TTxz_spd  GestureOnset 15.328 53.24821
+#  2  0021 skavi 15.328          250 TTxz_spd   TargetOnset 15.472 37.50784
+#  3  0021 skavi 15.328          250 TTxz_spd  TargetOffset 15.500 26.18081
+#  4  0021 skavi 15.328          250 TTxz_spd GestureOffset 15.696 31.36240
+#  5  0022 skavi 14.310          250 TTxz_spd  GestureOnset 14.312 45.83411
+#  6  0022 skavi 14.310          250 TTxz_spd   TargetOnset 14.476 32.10593
+#  7  0022 skavi 14.310          250 TTxz_spd  TargetOffset 14.512 30.39915
+#  8  0022 skavi 14.310          250 TTxz_spd GestureOffset 14.720 32.50779
+#  9  0021 spala  6.455          250 TTxz_spd  GestureOnset  6.464 54.75046
+# 10  0021 spala  6.455          250 TTxz_spd   TargetOnset  6.596 42.25295
+# 11  0021 spala  6.455          250 TTxz_spd  TargetOffset  6.624 38.85320
+# 12  0021 spala  6.455          250 TTxz_spd GestureOffset  6.788 36.93888
+# 13  0022 spala  8.004          250 TTxz_spd  GestureOnset  7.996 62.27941
+# 14  0022 spala  8.004          250 TTxz_spd   TargetOnset  8.140 36.79614
+# 15  0022 spala  8.004          250 TTxz_spd  TargetOffset  8.236 30.07731
+# 16  0022 spala  8.004          250 TTxz_spd GestureOffset  8.412 56.81165
+```
