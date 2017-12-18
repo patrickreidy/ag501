@@ -2,7 +2,7 @@
 % Please edit documentation in R/read.R
 \name{ReadSweep}
 \alias{ReadSweep}
-\title{Read the Positional Data Recorded During a Sweep}
+\title{Read the Sensor Data Recorded During a Sweep}
 \usage{
 ReadSweep(pos = "", txt = "", sweep = NULL, sensors = character(),
   dropExtra = TRUE, simplify = TRUE)
@@ -36,7 +36,7 @@ If \code{FALSE}, then the data tables for the sweeps are returned as
 elements of a list.}
 }
 \value{
-A listnested data frame with the following variables:
+A list or nested data frame with the following variables:
 
 \itemize{
   \item \code{Sweep}: A character, the name of the sweep, which identifies
@@ -100,13 +100,13 @@ A listnested data frame with the following variables:
 }
 
 \itemize{
-  \item \code{PositionData}: A list-col, whose only entry is the data frame
-    of the position data for the active sensors, returned by
+  \item \code{SensorData}: A list-col, whose only entry is the data frame
+    of the position and rotation data for the active sensors, returned by
     \code{\link{ReadSweepData}}.
 }
 }
 \description{
-Read the head-corrected (and biteplane-rotated) positional data from a
+Read the head-corrected (and biteplane-rotated) position and rotation data from a
 \code{.txt} file and its metadata from the header of a \code{.pos} file.
 }
 \details{

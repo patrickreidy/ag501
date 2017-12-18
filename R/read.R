@@ -295,20 +295,20 @@ ReadSweepData <- function(txt, sensors = character(), n = 7, dropExtra = TRUE) {
         }
       }
     }
-    .sweep_metadata <- purrr::map2(txt, sensors, .ReadSingleTXT, .n = n, .drop = dropExtra)
+    .sweep_data <- purrr::map2(txt, sensors, .ReadSingleTXT, .n = n, .drop = dropExtra)
   } else {
-    .sweep_metadata <- .ReadSingleTXT(txt, sensors, .n = n, .drop = dropExtra)
+    .sweep_data <- .ReadSingleTXT(txt, sensors, .n = n, .drop = dropExtra)
   }
-  return(.sweep_metadata)
+  return(.sweep_data)
 }
 
 
 
 
 
-#' Read the Positional Data Recorded During a Sweep
+#' Read the Sensor Data Recorded During a Sweep
 #'
-#' Read the head-corrected (and biteplane-rotated) positional data from a
+#' Read the head-corrected (and biteplane-rotated) position and rotation data from a
 #' \code{.txt} file and its metadata from the header of a \code{.pos} file.
 #'
 #' \code{ReadSweep} is vectorized over \code{pos}, \code{txt}, and \code{sensors}.
@@ -344,7 +344,7 @@ ReadSweepData <- function(txt, sensors = character(), n = 7, dropExtra = TRUE) {
 #'   If \code{FALSE}, then the data tables for the sweeps are returned as
 #'   elements of a list.
 #'
-#' @return A listnested data frame with the following variables:
+#' @return A list or nested data frame with the following variables:
 #' @template sweep-metadata
 #' @template sweep-data
 #'
@@ -380,8 +380,8 @@ ReadSweep <- function(pos = "", txt = "", sweep = NULL, sensors = character(), d
     .time_samples <- seq(from = 0, by = 1/dplyr::pull(.metadata, .data$SamplingRate),
                          length.out = nrow(.channel_data))
     .time_data <- tibble::tibble(Time = .time_samples)
-    .position_data <- dplyr::bind_cols(.time_data, .channel_data)
-    .sweep <- list(dplyr::mutate(.metadata, PositionData = list(.position_data)))
+    .sensor_data <- dplyr::bind_cols(.time_data, .channel_data)
+    .sweep <- list(dplyr::mutate(.metadata, SensorData = list(.sensor_data)))
     .named <- purrr::set_names(.sweep, stringr::str_replace(basename(.pos), "\\.pos$", ""))
     return(.named)
   }
