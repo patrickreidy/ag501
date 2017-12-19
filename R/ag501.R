@@ -38,6 +38,9 @@
 #'     \item \code{\link{TimeSlice}}
 #'     \item \code{\link{CentralDifference}}
 #'     \item \code{\link{ForwardDifference}}
+#'     \item \code{\link{FindMaxima}}
+#'     \item \code{\link{FindMinima}}
+#'     \item \code{\link{FindLandmarks}}
 #'   }
 #'
 #' @docType package

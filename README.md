@@ -32,7 +32,17 @@ GreekClusters()
 
 #### Read sweeps for the data set of Greek clusters
 ```r
-sensor_array <- c("", "", "TB", "TD", "TT", "UL", "LL")
+# This sensor array utilizes 7 of the 8 sockets available in a Carstens sensin box:
+# 1. HL: sensor attached to the left side of the head-correction glasses
+# 2. HR: sensor attached to the right side of the head-correction glasses
+# 3. TB: sensor attached to the tongue back (body)
+# 4. TD: sensor attached to the tongue dorsum
+# 5. TT: sensor attached to the tongue tip
+# 6. UL: sensor attached to the upper lip
+# 7. LL: sensor attached to the lower lip
+# Note: the sensors in sockets 3 through 7 (i.e., TB through LL) were all attached
+#       within the midsagittal plane, as best as possible.
+sensor_array <- c("HL", "HR", "TB", "TD", "TT", "UL", "LL")
 
 sweeps <- ReadSweep(GreekClusters()$POS, GreekClusters()$TXT, sensors = sensor_array)
 
